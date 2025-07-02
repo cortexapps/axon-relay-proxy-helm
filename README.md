@@ -17,9 +17,9 @@ The critical configuration options are:
 ## Installation
 
 0. (Recommended) Create a namespace in Kubernetes where you will run the proxy:
-  ```bash
-  kubectl create namespace my-axon-relay-proxy-namespace
-  ```
+   ```bash
+   kubectl create namespace my-axon-relay-proxy-namespace
+   ```
 
 1. Edit `values.yaml` to configure the proxy settings for your internal services:
     ```yaml
