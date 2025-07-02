@@ -1,0 +1,6 @@
+apiVersion: v2
+name: axon-relay-proxy
+description: A Helm chart for deploying Cortex Axon Agent in proxy mode to access internal endpoints
+type: application
+version: 0.1.0
+appVersion: "latest"

@@ -1,0 +1,45 @@
+# Axon Relay Proxy Configuration
+# 
+# The proxy section below configures how Axon Relay forwards requests to internal services.
+# When you make a request to https://<alias>@relay-proxy.cortex.io/some/path,
+# Axon Relay will forward it to <origin>/some/path based on the matching config rule.
+#
+# proxy.alias: Used as the prefix for relay-proxy.cortex.io URLs
+# proxy.configs: List of forwarding rules that define:
+#   - method: HTTP method to match (GET, POST, etc., or "any" for all methods)
+#   - path: URL path pattern to match (supports wildcards like /*)
+#   - origin: Target server base URL where requests are forwarded
+#   - auth: Optional authentication for the target server
+#     - scheme: Authentication type (bearer, token, or basic)
+#     - token: For bearer or token schemes, your API token
+#     - username/password: For basic scheme, your credentials
+#
+# In the example below, A request to https://martins-api-proxy@relay-proxy.cortex.io/api/data
+# will be forwarded to https://httpbin.org/anything/api/data
+# with header Authorization: Bearer your_token_here
+
+proxy:
+  alias: my-api
+  verbose: false
+  configs:
+    - method: any
+      path: /*
+      origin: https://httpbin.org/anything
+      auth:
+        scheme: bearer
+        token: your_token_here
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/cortexapps/cortex-axon-agent
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+  requests:
+    memory: "256Mi"
+    cpu: "250m"

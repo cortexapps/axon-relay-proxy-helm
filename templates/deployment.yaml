@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-proxy-{{ .Values.proxy.alias }}
+  labels:
+    app: {{ .Chart.Name }}-proxy-{{ .Values.proxy.alias }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-proxy
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-proxy
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+        env:
+          {{- if (.Values.httpProxy).disableTLS }}
+          - name: DISABLE_TLS
+            value: "true"
+          {{- end }}
+          {{- if (.Values.httpProxy).certSecretName }}
+          - name: CA_CERT_PATH
+            value: /etc/ssl/axon-certs
+          {{- end }}
+          {{- if (.Values.httpProxy).server }}
+          - name: HTTP_PROXY
+            value: {{ .Values.httpProxy.server }}
+          - name: HTTPS_PROXY
+            value: {{ .Values.httpProxy.server }}
+          {{- end }}
+          {{- if (.Values.httpProxy).noProxy }}
+          - name: NO_PROXY
+            value: {{ .Values.httpProxy.noProxy }}
+          {{- end }}
+        envFrom:
+        - secretRef:
+            name: axon-secrets
+        resources:
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+        args: 
+          - relay
+          # - -i
+          # - proxy
+          - -a
+          - {{ .Values.proxy.alias }}
+          - -f
+          - /etc/axon/proxy-config.json
+          {{- if .Values.proxy.verbose }}
+          - -v
+          {{- end }}
+        volumeMounts:
+          - name: proxy-config
+            mountPath: /etc/axon
+            readOnly: true
+      volumes:
+        - name: proxy-config
+          configMap:
+            name: {{ .Release.Name }}-proxy-config
